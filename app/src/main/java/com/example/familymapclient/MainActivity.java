@@ -14,7 +14,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 
 import request.RegisterRequest;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.Listener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements LoginFragment.Listener,
+        OnMapReadyCallback {
 
     private LoginFragment loginFragment;
 
