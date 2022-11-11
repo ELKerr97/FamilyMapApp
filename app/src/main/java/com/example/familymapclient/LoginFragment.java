@@ -134,6 +134,7 @@ public class LoginFragment extends Fragment {
         @Override
         public void run() {
             ServerProxy proxy = new ServerProxy();
+            //System.out.println("login with server proxy");
             sendMessage(proxy.login(loginRequest));
         }
 

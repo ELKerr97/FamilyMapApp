@@ -10,7 +10,7 @@ public class DataCache {
     private ArrayList<String> femaleNames;
     private ArrayList<Event> events;
     private ArrayList<String> lastNames;
-    private String serverHost = "localhost"; // make these dynamic
+    private String serverHost = "10.0.2.2"; // make these dynamic
     private int serverPort = 8081;
 
     private static DataCache instance;
