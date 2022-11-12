@@ -30,13 +30,14 @@ public class LoginFragment extends Fragment {
 
     private Listener listener;
     private static final String LOGIN_RESULT_KEY = "LoginResultKey";
+    private final DataCache dataCache;
 
     public interface Listener {
         void notifyDone();
     }
 
     public LoginFragment() {
-        // Required empty public constructor
+        this.dataCache = DataCache.getInstance();
     }
 
     public void registerListener(Listener listener){
@@ -83,23 +84,41 @@ public class LoginFragment extends Fragment {
         // Login button listener
         loginButton.setOnClickListener(v -> {
             try {
-                LoginRequest loginRequest = new LoginRequest(username.getText().toString(),
-                        password.getText().toString());
                 Context context = this.getContext();
-                // Create LoginTask
-                Handler uiThreadMessageHandler = new Handler() {
-                    @Override
-                    public void handleMessage(Message message) {
-                        Bundle bundle = message.getData();
-                        String resultMessage = bundle.getString(LOGIN_RESULT_KEY);
-                        Toast loginToast = Toast.makeText(context, resultMessage, Toast.LENGTH_LONG);
-                        loginToast.show();
-                    }
-                };
+                if(username.getText().toString().equals("") ||
+                        password.getText().toString().equals("")){
+                    Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
+                            " username and password.", Toast.LENGTH_LONG);
+                    invalidToast.show();
+                } else if (serverPort.getText().toString().equals("") ||
+                        serverHost.getText().toString().equals("")) {
+                    Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
+                            " server host or server port.", Toast.LENGTH_LONG);
+                    invalidToast.show();
+                } else {
+                    dataCache.setServerPort(Integer.parseInt(serverPort.getText().toString()));
+                    dataCache.setServerHost(serverHost.getText().toString());
 
-                LoginTask loginTask = new LoginTask(uiThreadMessageHandler, loginRequest);
-                ExecutorService executorService = Executors.newSingleThreadExecutor();
-                executorService.submit(loginTask);
+                    LoginRequest loginRequest = new LoginRequest(username.getText().toString(),
+                            password.getText().toString());
+
+                    // Create LoginTask
+                    Handler uiThreadMessageHandler = new Handler() {
+                        @Override
+                        public void handleMessage(Message message) {
+                            Bundle bundle = message.getData();
+                            String resultMessage = bundle.getString(LOGIN_RESULT_KEY);
+                            Toast loginToast = Toast.makeText(context, resultMessage, Toast.LENGTH_LONG);
+                            loginToast.show();
+                        }
+                    };
+
+                    // Create new LoginTask to run in the background
+                    LoginTask loginTask = new LoginTask(uiThreadMessageHandler, loginRequest);
+                    // Execute background task
+                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                    executorService.submit(loginTask);
+                }
             } catch (Exception ex){
                 ex.printStackTrace();
             }
@@ -145,5 +164,6 @@ public class LoginFragment extends Fragment {
             message.setData(messageBundle);
             messageHandler.sendMessage(message);
         }
+
     }
 }

@@ -60,9 +60,9 @@ public class ServerProxy {
 
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return new LoginResult(null, null, null, false,
+                    "Error: Invalid server host or server port.");
         }
-        //return null;
     }
 
     protected void writeString(String str, OutputStream os) throws IOException {
