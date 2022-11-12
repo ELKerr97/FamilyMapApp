@@ -23,13 +23,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import request.LoginRequest;
+import request.RegisterRequest;
 import result.LoginResult;
+import result.RegisterResult;
 
 
 public class LoginFragment extends Fragment {
 
     private Listener listener;
     private static final String LOGIN_RESULT_KEY = "LoginResultKey";
+    private static final String REGISTER_RESULT_KEY = "RegisterResultKey";
     private final DataCache dataCache;
 
     public interface Listener {
@@ -73,28 +76,26 @@ public class LoginFragment extends Fragment {
         RadioButton male = view.findViewById(R.id.maleButton);
         RadioButton female = view.findViewById(R.id.femaleButton);
 
-        // Determine if male or female
-        String gender = "";
-        if(male.isChecked()){
-            gender = "m";
-        } else if (female.isChecked()){
-            gender = "f";
-        }
+        Context context = this.getContext();
 
         // Login button listener
         loginButton.setOnClickListener(v -> {
             try {
-                Context context = this.getContext();
+                // Check for invalid input
                 if(username.getText().toString().equals("") ||
                         password.getText().toString().equals("")){
+
                     Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
                             " username and password.", Toast.LENGTH_LONG);
                     invalidToast.show();
+
                 } else if (serverPort.getText().toString().equals("") ||
                         serverHost.getText().toString().equals("")) {
+
                     Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
                             " server host or server port.", Toast.LENGTH_LONG);
                     invalidToast.show();
+
                 } else {
                     dataCache.setServerPort(Integer.parseInt(serverPort.getText().toString()));
                     dataCache.setServerHost(serverHost.getText().toString());
@@ -110,6 +111,10 @@ public class LoginFragment extends Fragment {
                             String resultMessage = bundle.getString(LOGIN_RESULT_KEY);
                             Toast loginToast = Toast.makeText(context, resultMessage, Toast.LENGTH_LONG);
                             loginToast.show();
+                            // If there are no errors, move on to map fragment.
+                            if(listener != null && !resultMessage.contains("Error")){
+                                listener.notifyDone();
+                            }
                         }
                     };
 
@@ -123,17 +128,79 @@ public class LoginFragment extends Fragment {
                 ex.printStackTrace();
             }
 
-//            if(listener != null){
-//                listener.notifyDone();
-//            }
+
         });
 
         // Register button listener
         registerButton.setOnClickListener(v -> {
-            // Register User
-            if(listener != null){
-                listener.notifyDone();
+            try {
+                // Determine if male or female
+                String gender = "";
+                if(male.isChecked()){
+                    gender = "m";
+                } else if (female.isChecked()){
+                    gender = "f";
+                }
+
+                // Check for form errors
+                if(serverPort.getText().toString().equals("") ||
+                        serverHost.getText().toString().equals("")){
+                    Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
+                            " server host or server port.", Toast.LENGTH_LONG);
+                    invalidToast.show();
+                } else if (username.getText().toString().equals("") ||
+                        password.getText().toString().equals("")){
+
+                    Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
+                            " username and password.", Toast.LENGTH_LONG);
+                    invalidToast.show();
+
+                } else if (firstName.getText().toString().equals("") ||
+                            lastName.getText().toString().equals("") ||
+                            email.getText().toString().equals("") ||
+                            gender.equals("")){
+
+                    Toast invalidToast = Toast.makeText(context, "Error: Please enter a valid" +
+                            " username and password.", Toast.LENGTH_LONG);
+                    invalidToast.show();
+
+                } else {
+                    dataCache.setServerPort(Integer.parseInt(serverPort.getText().toString()));
+                    dataCache.setServerHost(serverHost.getText().toString());
+
+                    RegisterRequest registerRequest = new RegisterRequest(
+                            username.getText().toString(),
+                            password.getText().toString(),
+                            email.getText().toString(),
+                            firstName.getText().toString(),
+                            lastName.getText().toString(),
+                            gender
+                            );
+
+                    Handler uiThreadMessageHandler = new Handler() {
+                        @Override
+                        public void handleMessage(Message message) {
+                            Bundle bundle = message.getData();
+                            String resultMessage = bundle.getString(REGISTER_RESULT_KEY);
+                            Toast registerToast = Toast.makeText(context, resultMessage, Toast.LENGTH_LONG);
+                            registerToast.show();
+                            // If there are no errors, move on to map fragment.
+//                            if(listener != null && !resultMessage.contains("Error")){
+//                                listener.notifyDone();
+//                            }
+                        }
+                    };
+
+                    // Create new LoginTask to run in the background
+                    RegisterTask registerTask = new RegisterTask(uiThreadMessageHandler, registerRequest);
+                    // Execute background task
+                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                    executorService.submit(registerTask);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
+
         });
 
         return view;
@@ -161,6 +228,32 @@ public class LoginFragment extends Fragment {
             Message message = Message.obtain();
             Bundle messageBundle = new Bundle();
             messageBundle.putString(LOGIN_RESULT_KEY, result.getMessage());
+            message.setData(messageBundle);
+            messageHandler.sendMessage(message);
+        }
+
+    }
+
+    private static class RegisterTask implements Runnable {
+
+        private final Handler messageHandler;
+        private final RegisterRequest registerRequest;
+
+        public RegisterTask (Handler messageHandler, RegisterRequest registerRequest){
+            this.messageHandler = messageHandler;
+            this.registerRequest = registerRequest;
+        }
+
+        @Override
+        public void run() {
+            ServerProxy proxy = new ServerProxy();
+            sendMessage(proxy.register(registerRequest));
+        }
+
+        private void sendMessage(RegisterResult result){
+            Message message = Message.obtain();
+            Bundle messageBundle = new Bundle();
+            messageBundle.putString(REGISTER_RESULT_KEY, result.getMessage());
             message.setData(messageBundle);
             messageHandler.sendMessage(message);
         }

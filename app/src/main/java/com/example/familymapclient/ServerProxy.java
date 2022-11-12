@@ -15,6 +15,7 @@ import java.util.Map;
 import request.LoginRequest;
 import request.RegisterRequest;
 import result.LoginResult;
+import result.RegisterResult;
 import service.LoginService;
 
 public class ServerProxy {
@@ -61,6 +62,46 @@ public class ServerProxy {
         } catch (IOException e) {
             e.printStackTrace();
             return new LoginResult(null, null, null, false,
+                    "Error: Invalid server host or server port.");
+        }
+    }
+
+    public RegisterResult register(RegisterRequest registerRequest) {
+        RegisterResult registerResult;
+        try {
+            // Make request body
+            URL url = new URL("http://" + dataCache.getServerHost() +
+                    ":" + dataCache.getServerPort() + "/user/register");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Accept", "application/json");
+            connection.connect();
+
+            Gson gson = new Gson();
+            String registerRequestBody = gson.toJson(registerRequest);
+            OutputStream reqBody = connection.getOutputStream();
+            writeString(registerRequestBody, reqBody);
+            reqBody.close();
+
+            int responseCode = connection.getResponseCode();
+
+            if(responseCode == 200){
+                InputStream resBody = connection.getInputStream();
+                String responseData = readString(resBody);
+                registerResult = gson.fromJson(responseData, RegisterResult.class);
+            } else {
+                InputStream resBody = connection.getErrorStream();
+                String responseData = readString(resBody);
+                registerResult = gson.fromJson(responseData, RegisterResult.class);
+            }
+
+            return registerResult;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new RegisterResult(null, null, null, false,
                     "Error: Invalid server host or server port.");
         }
     }
