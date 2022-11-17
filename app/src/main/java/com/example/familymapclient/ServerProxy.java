@@ -9,12 +9,19 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import model.Event;
+import model.Person;
+import request.EventRequest;
 import request.LoginRequest;
+import request.PersonRequest;
 import request.RegisterRequest;
+import result.EventResult;
 import result.LoginResult;
+import result.PersonResult;
 import result.RegisterResult;
 import service.LoginService;
 
@@ -51,6 +58,10 @@ public class ServerProxy {
                 InputStream resBody = connection.getInputStream();
                 String responseData = readString(resBody);
                 loginResult = gson.fromJson(responseData, LoginResult.class);
+                EventRequest eventRequest = new EventRequest(loginResult.getAuthtoken(), null);
+                PersonRequest personRequest = new PersonRequest(loginResult.getAuthtoken(), "");
+                getEvents(eventRequest);
+                getPeople(personRequest);
             } else {
                 InputStream resBody = connection.getErrorStream();
                 String responseData = readString(resBody);
@@ -63,6 +74,76 @@ public class ServerProxy {
             e.printStackTrace();
             return new LoginResult(null, null, null, false,
                     "Error: Invalid server host or server port.");
+        }
+    }
+
+    public void getPeople (PersonRequest personRequest){
+        PersonResult personResult;
+        try {
+            // Make request body
+            URL url = new URL("http://" + dataCache.getServerHost() +
+                    ":" + dataCache.getServerPort() + "/person");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", personRequest.getAuthtoken());
+            connection.setRequestProperty("Accept", "application/json");
+            connection.connect();
+
+            Gson gson = new Gson();
+
+            int responseCode = connection.getResponseCode();
+
+            if(responseCode == 200){
+                InputStream resBody = connection.getInputStream();
+                String responseData = readString(resBody);
+                personResult = gson.fromJson(responseData, PersonResult.class);
+            } else {
+                InputStream resBody = connection.getErrorStream();
+                String responseData = readString(resBody);
+                personResult = gson.fromJson(responseData, PersonResult.class);
+            }
+
+            dataCache.setPeople(personResult.getData());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
+    public void getEvents (EventRequest eventRequest){
+        EventResult eventResult;
+        try {
+            // Make request body
+            URL url = new URL("http://" + dataCache.getServerHost() +
+                    ":" + dataCache.getServerPort() + "/event");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", eventRequest.getAuthtoken());
+            connection.setRequestProperty("Accept", "application/json");
+            connection.connect();
+
+            Gson gson = new Gson();
+
+            int responseCode = connection.getResponseCode();
+
+            if(responseCode == 200){
+                InputStream resBody = connection.getInputStream();
+                String responseData = readString(resBody);
+                eventResult = gson.fromJson(responseData, EventResult.class);
+            } else {
+                InputStream resBody = connection.getErrorStream();
+                String responseData = readString(resBody);
+                eventResult = gson.fromJson(responseData, EventResult.class);
+            }
+
+            dataCache.setEvents(eventResult.getData());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
         }
     }
 

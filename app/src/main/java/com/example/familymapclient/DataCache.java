@@ -3,14 +3,16 @@ package com.example.familymapclient;
 import java.util.ArrayList;
 
 import model.Event;
+import model.Person;
+import model.User;
 
 public class DataCache {
 
-    private ArrayList<String> maleNames;
-    private ArrayList<String> femaleNames;
     private ArrayList<Event> events;
+    private ArrayList<Person> people;
     private ArrayList<String> lastNames;
-    private String serverHost; // make these dynamic
+    private User user;
+    private String serverHost;
     private int serverPort;
 
     private static DataCache instance;
@@ -28,20 +30,22 @@ public class DataCache {
 
     private DataCache() {}
 
-    public ArrayList<String> getMaleNames() {
-        return maleNames;
+    public Person getPerson(String personID){
+        for(Person person : people){
+            if(person.getPersonID().equals(personID)){
+                return person;
+            }
+        }
+
+        return null;
     }
 
-    public void setMaleNames(ArrayList<String> maleNames) {
-        this.maleNames = maleNames;
+    public ArrayList<Person> getPeople() {
+        return people;
     }
 
-    public ArrayList<String> getFemaleNames() {
-        return femaleNames;
-    }
-
-    public void setFemaleNames(ArrayList<String> femaleNames) {
-        this.femaleNames = femaleNames;
+    public void setPeople(ArrayList<Person> people) {
+        this.people = people;
     }
 
     public ArrayList<Event> getEvents() {

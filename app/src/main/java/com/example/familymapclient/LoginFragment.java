@@ -22,7 +22,10 @@ import android.widget.Toast;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import model.Person;
+import request.EventRequest;
 import request.LoginRequest;
+import request.PersonRequest;
 import request.RegisterRequest;
 import result.LoginResult;
 import result.RegisterResult;
@@ -32,6 +35,8 @@ public class LoginFragment extends Fragment {
 
     private Listener listener;
     private static final String LOGIN_RESULT_KEY = "LoginResultKey";
+    private static final String LOGIN_RESULT_FIRSTNAME_KEY = "LoginResultFirstNameKey";
+    private static final String LOGIN_RESULT_LASTNAME_KEY = "LoginResultLastNameKey";
     private static final String REGISTER_RESULT_KEY = "RegisterResultKey";
     private final DataCache dataCache;
 
@@ -107,13 +112,22 @@ public class LoginFragment extends Fragment {
                     Handler uiThreadMessageHandler = new Handler() {
                         @Override
                         public void handleMessage(Message message) {
+                            Toast loginToast;
                             Bundle bundle = message.getData();
                             String resultMessage = bundle.getString(LOGIN_RESULT_KEY);
-                            Toast loginToast = Toast.makeText(context, resultMessage, Toast.LENGTH_LONG);
-                            loginToast.show();
                             // If there are no errors, move on to map fragment.
                             if(listener != null && !resultMessage.contains("Error")){
+                                String firstName = bundle.getString(LOGIN_RESULT_FIRSTNAME_KEY);
+                                String lastName = bundle.getString(LOGIN_RESULT_LASTNAME_KEY);
+                                loginToast = Toast.makeText(
+                                        context,
+                                        "Successfully logged in " + firstName + " " + lastName,
+                                        Toast.LENGTH_LONG);
+                                loginToast.show();
                                 listener.notifyDone();
+                            } else {
+                                loginToast = Toast.makeText(context, resultMessage, Toast.LENGTH_LONG);
+                                loginToast.show();
                             }
                         }
                     };
@@ -220,13 +234,18 @@ public class LoginFragment extends Fragment {
         @Override
         public void run() {
             ServerProxy proxy = new ServerProxy();
-            //System.out.println("login with server proxy");
-            sendMessage(proxy.login(loginRequest));
+            LoginResult loginResult = proxy.login(loginRequest);
+            sendMessage(loginResult);
         }
 
         private void sendMessage(LoginResult result){
             Message message = Message.obtain();
             Bundle messageBundle = new Bundle();
+            if(result.isSuccess()){
+                Person userPerson = DataCache.getInstance().getPerson(result.getPersonID());
+                messageBundle.putString(LOGIN_RESULT_FIRSTNAME_KEY, userPerson.getFirstName());
+                messageBundle.putString(LOGIN_RESULT_LASTNAME_KEY, userPerson.getLastName());
+            }
             messageBundle.putString(LOGIN_RESULT_KEY, result.getMessage());
             message.setData(messageBundle);
             messageHandler.sendMessage(message);
