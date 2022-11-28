@@ -15,6 +15,7 @@ import java.util.Map;
 
 import model.Event;
 import model.Person;
+import model.User;
 import request.EventRequest;
 import request.LoginRequest;
 import request.PersonRequest;
@@ -60,6 +61,8 @@ public class ServerProxy {
                 loginResult = gson.fromJson(responseData, LoginResult.class);
                 EventRequest eventRequest = new EventRequest(loginResult.getAuthtoken(), null);
                 PersonRequest personRequest = new PersonRequest(loginResult.getAuthtoken(), "");
+                // set user Auth Token in data cache for later use
+                dataCache.setUserAuthToken(loginResult.getAuthtoken());
                 getEvents(eventRequest);
                 getPeople(personRequest);
             } else {
@@ -104,7 +107,15 @@ public class ServerProxy {
                 personResult = gson.fromJson(responseData, PersonResult.class);
             }
 
-            dataCache.setPeople(personResult.getData());
+            // Remove quotes
+            for(Person person : personResult.getData()){
+                person.setFirstName(person.getFirstName().substring(1, person.getFirstName().length() - 1));
+                person.setLastName(person.getLastName().substring(1, person.getLastName().length() - 1));
+            }
+
+            if (personRequest.getPersonID().equalsIgnoreCase("")){
+                dataCache.setPeople(personResult.getData());
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

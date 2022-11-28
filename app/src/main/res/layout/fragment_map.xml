@@ -10,11 +10,17 @@
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/mapTextView" />
+        android:layout_above="@+id/mapPersonEvent" />
+
+    <ImageView
+        android:id="@+id/personIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
 
     <TextView
-        android:id="@+id/mapTextView"
-        android:layout_width="match_parent"
+        android:id="@+id/mapPersonEvent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="Add stuff here"

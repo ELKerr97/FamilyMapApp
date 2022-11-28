@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import model.Person;
+import model.User;
 import request.EventRequest;
 import request.LoginRequest;
 import request.PersonRequest;
@@ -241,16 +242,17 @@ public class LoginFragment extends Fragment {
         private void sendMessage(LoginResult result){
             Message message = Message.obtain();
             Bundle messageBundle = new Bundle();
+            DataCache dataCache = DataCache.getInstance();
             if(result.isSuccess()){
-                Person userPerson = DataCache.getInstance().getPerson(result.getPersonID());
+                Person userPerson = dataCache.getPerson(result.getPersonID());
                 messageBundle.putString(LOGIN_RESULT_FIRSTNAME_KEY, userPerson.getFirstName());
                 messageBundle.putString(LOGIN_RESULT_LASTNAME_KEY, userPerson.getLastName());
+                dataCache.setUserPersonID(userPerson.getPersonID());
             }
             messageBundle.putString(LOGIN_RESULT_KEY, result.getMessage());
             message.setData(messageBundle);
             messageHandler.sendMessage(message);
         }
-
     }
 
     private static class RegisterTask implements Runnable {

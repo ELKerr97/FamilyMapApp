@@ -11,7 +11,8 @@ public class DataCache {
     private ArrayList<Event> events;
     private ArrayList<Person> people;
     private ArrayList<String> lastNames;
-    private User user;
+    private String userPersonID;
+    private String userAuthToken;
     private String serverHost;
     private int serverPort;
 
@@ -30,6 +31,11 @@ public class DataCache {
 
     private DataCache() {}
 
+    /**
+     * Get a Person object based on a personID string
+     * @param personID String of person ID
+     * @return Person object
+     */
     public Person getPerson(String personID){
         for(Person person : people){
             if(person.getPersonID().equals(personID)){
@@ -40,6 +46,38 @@ public class DataCache {
         return null;
     }
 
+    /**
+     * Get events associated with a specific person
+     * @param personID String of person ID
+     * @return List of Events
+     */
+    public ArrayList<Event> getPersonEvents (String personID){
+        ArrayList<Event> personEvents = new ArrayList<>();
+        for(Event event : events){
+            if(event.getAssociatedUsername().equals(personID)){
+                personEvents.add(event);
+            }
+        }
+
+        return personEvents;
+    }
+
+    public String getUserAuthToken() {
+        return userAuthToken;
+    }
+
+    public void setUserAuthToken(String userAuthToken) {
+        this.userAuthToken = userAuthToken;
+    }
+
+    public String getUserPersonID() {
+        return userPersonID;
+    }
+
+    public void setUserPersonID(String userPersonID) {
+        this.userPersonID = userPersonID;
+    }
+
     public ArrayList<Person> getPeople() {
         return people;
     }
@@ -48,7 +86,7 @@ public class DataCache {
         this.people = people;
     }
 
-    public ArrayList<Event> getEvents() {
+    public ArrayList<Event> getAllEvents() {
         return events;
     }
 
