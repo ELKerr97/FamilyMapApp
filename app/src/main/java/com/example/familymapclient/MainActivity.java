@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Lis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Iconify.with(new FontAwesomeModule());
         // Get pointer to fragment manager
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         // Get pointer to fragment in FrameLayout

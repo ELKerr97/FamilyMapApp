@@ -9,13 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-import model.Event;
-import model.Person;
-import model.User;
 import request.EventRequest;
 import request.LoginRequest;
 import request.PersonRequest;
@@ -24,7 +18,6 @@ import result.EventResult;
 import result.LoginResult;
 import result.PersonResult;
 import result.RegisterResult;
-import service.LoginService;
 
 public class ServerProxy {
 
@@ -107,12 +100,6 @@ public class ServerProxy {
                 personResult = gson.fromJson(responseData, PersonResult.class);
             }
 
-            // Remove quotes
-            for(Person person : personResult.getData()){
-                person.setFirstName(person.getFirstName().substring(1, person.getFirstName().length() - 1));
-                person.setLastName(person.getLastName().substring(1, person.getLastName().length() - 1));
-            }
-
             if (personRequest.getPersonID().equalsIgnoreCase("")){
                 dataCache.setPeople(personResult.getData());
             }
@@ -150,7 +137,7 @@ public class ServerProxy {
                 eventResult = gson.fromJson(responseData, EventResult.class);
             }
 
-            dataCache.setEvents(eventResult.getData());
+            dataCache.setAllEvents(eventResult.getData());
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -103,7 +103,7 @@ public class LoginFragment extends Fragment {
                     invalidToast.show();
 
                 } else {
-                    dataCache.setServerPort(Integer.parseInt(serverPort.getText().toString()));
+                    dataCache.setServerPort(serverPort.getText().toString());
                     dataCache.setServerHost(serverHost.getText().toString());
 
                     LoginRequest loginRequest = new LoginRequest(username.getText().toString(),
@@ -180,7 +180,7 @@ public class LoginFragment extends Fragment {
                     invalidToast.show();
 
                 } else {
-                    dataCache.setServerPort(Integer.parseInt(serverPort.getText().toString()));
+                    dataCache.setServerPort(serverPort.getText().toString());
                     dataCache.setServerHost(serverHost.getText().toString());
 
                     RegisterRequest registerRequest = new RegisterRequest(
