@@ -4,9 +4,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import model.Event;
 import model.Person;
@@ -24,6 +26,8 @@ public class DataCache {
     private String serverPort;
     private final Map<String, Float> eventColors;
 
+    private boolean userLoggedIn;
+
     private boolean showMaleEvents;
     private boolean showFemaleEvents;
     private boolean showMomSideEvents;
@@ -32,6 +36,12 @@ public class DataCache {
     private boolean showSpouseLines;
     private boolean showFamilyTreeLines;
     private boolean showLifeStoryLines;
+
+    public final int MAIN_ACTIVITY = 0;
+    public final int EVENT_ACTIVITY = 1;
+    public final int SETTINGS_ACTIVITY = 2;
+    public final int SEARCH_ACTIVITY = 3;
+    private int currentActivity;
 
     private Event currentMapEvent;
 
@@ -57,7 +67,25 @@ public class DataCache {
         this.showFamilyTreeLines = true;
         this.showLifeStoryLines = true;
         this.currentMapEvent = null;
+        this.userLoggedIn = false;
+        this.currentActivity = MAIN_ACTIVITY;
         this.eventColors = new HashMap<>();
+    }
+
+    public boolean userLoggedIn(){
+        return userLoggedIn;
+    }
+
+    public void setUserLoggedIn(boolean loggedIn){
+        this.userLoggedIn = loggedIn;
+    }
+
+    public void setCurrentActivity(int activity){
+        this.currentActivity = activity;
+    }
+
+    public int getCurrentActivity(){
+        return currentActivity;
     }
 
     public Event getCurrentMapEvent () {
@@ -275,6 +303,16 @@ public class DataCache {
         allMapEvents.removeAll(filteredEvents);
 
         return allMapEvents;
+    }
+
+    public ArrayList<Person> getFilteredPeople() {
+        Set<Person> uniquePeople = new HashSet<>();
+
+        for(Event event : getFilteredEvents(userPersonID)){
+            uniquePeople.add(getPerson(event.getPersonID()));
+        }
+
+        return new ArrayList<>(uniquePeople);
     }
 
     private boolean isMaleEvent(Event event){

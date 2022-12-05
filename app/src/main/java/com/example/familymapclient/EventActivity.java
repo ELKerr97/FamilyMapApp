@@ -20,7 +20,8 @@ public class EventActivity extends AppCompatActivity {
         Iconify.with( new FontAwesomeModule());
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
-
+        DataCache dataCache = DataCache.getInstance();
+        dataCache.setCurrentActivity(dataCache.EVENT_ACTIVITY);
         mapFragment = (MapFragment) fragmentManager.findFragmentById(R.id.map_fragment);
 
     }

@@ -15,18 +15,22 @@ import android.util.Log;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 
+import java.util.Map;
+
 import request.RegisterRequest;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.Listener,
         OnMapReadyCallback {
 
     private LoginFragment loginFragment;
+    DataCache dataCache = DataCache.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Iconify.with(new FontAwesomeModule());
+        dataCache.setCurrentActivity(dataCache.MAIN_ACTIVITY);
         // Get pointer to fragment manager
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         // Get pointer to fragment in FrameLayout
@@ -45,9 +49,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Lis
     }
 
     private Fragment createFirstFragment() {
-        LoginFragment loginFragment = new LoginFragment();
-        loginFragment.registerListener(this);
-        return loginFragment;
+        if(!dataCache.userLoggedIn()){
+            LoginFragment loginFragment = new LoginFragment();
+            loginFragment.registerListener(this);
+            return loginFragment;
+        } else {
+            return new MapFragment();
+        }
     }
 
 

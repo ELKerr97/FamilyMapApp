@@ -9,9 +9,13 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,6 +50,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(layoutInflater, container, savedInstanceState);
         View view = layoutInflater.inflate(R.layout.fragment_map, container, false);
+
+        setHasOptionsMenu(true);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
@@ -170,6 +176,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     return false;
                 }
             });
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        if(dataCache.getCurrentActivity() == dataCache.MAIN_ACTIVITY){
+            inflater.inflate(R.menu.main_menu, menu);
+        } else {
+            inflater.inflate(R.menu.up_only_menu, menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.search_menu_item:
+                Intent intent = new Intent(getContext(), SearchActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.settings_menu_item:
+                // Go to settings activity
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 

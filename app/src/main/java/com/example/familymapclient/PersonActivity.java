@@ -1,5 +1,6 @@
 package com.example.familymapclient;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -7,6 +8,9 @@ import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -22,6 +26,7 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.Inflater;
 
 import model.Event;
 import model.Person;
@@ -261,6 +266,7 @@ public class PersonActivity extends AppCompatActivity {
             });
         }
 
+
         @Override
         public boolean isChildSelectable(int groupPosition, int childPosition) {
             return true;
@@ -325,5 +331,23 @@ public class PersonActivity extends AppCompatActivity {
         public int getGroupTypeCount() {
             return super.getGroupTypeCount();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.up_only_menu, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == android.R.id.home){
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        return true;
     }
 }
