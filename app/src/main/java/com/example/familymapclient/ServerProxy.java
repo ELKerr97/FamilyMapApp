@@ -138,7 +138,7 @@ public class ServerProxy {
             }
 
             dataCache.setAllEvents(eventResult.getData());
-
+            dataCache.setEventColors();
         } catch (IOException e) {
             e.printStackTrace();
             return;

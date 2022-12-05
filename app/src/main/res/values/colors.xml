@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="male_color">#1434A4</color>
     <color name="female_color">#DB39AF</color>
+    <color name="red">#EE4B2B</color>
 </resources>

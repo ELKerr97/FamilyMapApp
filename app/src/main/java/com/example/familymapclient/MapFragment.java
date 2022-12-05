@@ -3,6 +3,7 @@ package com.example.familymapclient;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -38,11 +39,6 @@ import model.Person;
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
     private GoogleMap map;
-    private final float BIRTH_COLOR = BitmapDescriptorFactory.HUE_BLUE;
-    private final float MARRIAGE_COLOR = BitmapDescriptorFactory.HUE_ORANGE;
-    private final float DEATH_COLOR = BitmapDescriptorFactory.HUE_RED;
-    private Map<String, Float> colorMap;
-
     private ArrayList<Polyline> mapLines;
     private DataCache dataCache = DataCache.getInstance();
 
@@ -71,33 +67,63 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 .colorRes(R.color.male_color).sizeDp(40);
         Drawable femaleIcon = new IconDrawable(getActivity(), FontAwesomeIcons.fa_female)
                 .colorRes(R.color.female_color).sizeDp(40);
-        // Default login location (arbitrary)
-        LatLng location = new LatLng(50, 50);
-        map.animateCamera(CameraUpdateFactory.newLatLng(location));
 
-        colorMap = new HashMap<>();
-        ArrayList<MapEvent> filteredEvents = getFilteredEvents(dataCache.getUserPersonID());
-        // Get all map events and display them
-        for(MapEvent mapEvent : filteredEvents){
-            float color;
-            String eventType = mapEvent.getEvent().getEventType();
-            if(colorMap.size() == 0){
-                color = (float) (0.0 + Math.random() * (360.0 - 0.0));
-                colorMap.put(eventType, color);
-            } else if(!colorMap.containsKey(eventType)){
-                color = (float) (0.0 + Math.random() * (360.0 - 0.0));
-                colorMap.put(eventType, color);
+        // Default login location (arbitrary)
+        LatLng location;
+        if(dataCache.getCurrentMapEvent() == null){
+            location = new LatLng(50, 50);
+        } else {
+            Event currentEvent = dataCache.getCurrentMapEvent();
+            location = new LatLng(currentEvent.getLatitude(), currentEvent.getLongitude());
+            Person person = dataCache.getPerson(currentEvent.getPersonID());
+
+            if(person.getGender().equalsIgnoreCase("f")){
+                personIcon.setImageDrawable(femaleIcon);
             } else {
-                color = colorMap.get(eventType);
+                personIcon.setImageDrawable(maleIcon);
             }
 
-            LatLng eventLocation = new LatLng(mapEvent.getEvent().getLatitude(),
-                    mapEvent.getEvent().getLongitude());
+            mapTextView.setText(
+                    dataCache.getPersonOfEvent(currentEvent) + "\n" +
+                            dataCache.getEventDetails(currentEvent));
+            // Draw lines based on filters
+            LineBuilder lineBuilder = new LineBuilder(currentEvent, person.getPersonID(), dataCache.getFilteredEvents(person.getPersonID()));
+
+            Event spouseEvent = lineBuilder.getSpouseEvent();
+
+            if(spouseEvent != null && lineBuilder.shouldShowLine(currentEvent, spouseEvent, dataCache.getFilteredEvents(person.getPersonID()))){
+                drawLine(currentEvent, spouseEvent, Color.RED, (float) 0.1);
+            }
+
+            drawLifeStoryLines(person.getPersonID());
+            drawFamilyTreeLines(currentEvent, dataCache.getFilteredEvents(person.getPersonID()));
+
+            mapTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getContext(), PersonActivity.class);
+                    intent.putExtra(PersonActivity.PERSON_KEY, person.getPersonID());
+                    startActivity(intent);
+                }
+            });
+        }
+
+        map.animateCamera(CameraUpdateFactory.newLatLng(location));
+
+        ArrayList<Event> filteredEvents = dataCache.getFilteredEvents(dataCache.getUserPersonID());
+        // Get all map events and display them
+        for(Event mapEvent : filteredEvents){
+
+            String eventType = mapEvent.getEventType().toLowerCase();
+
+            LatLng eventLocation = new LatLng(mapEvent.getLatitude(),
+                    mapEvent.getLongitude());
 
             Marker eventMarker = map.addMarker(
                             new MarkerOptions().
                             position(eventLocation).
-                            icon(BitmapDescriptorFactory.defaultMarker(color)));
+                            icon(BitmapDescriptorFactory.defaultMarker(dataCache.getEventColor(eventType))));
+
             assert eventMarker != null;
             eventMarker.setTag(mapEvent);
 
@@ -106,16 +132,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 public boolean onMarkerClick(@NonNull Marker marker) {
                     removeLines();
                     // Display the person associated with the event on screen
-                    MapEvent markerEvent = (MapEvent) marker.getTag();
-                    Person person = dataCache.getPerson(markerEvent.getEvent().getPersonID());
+                    Event markerEvent = (Event) marker.getTag();
+                    Person person = dataCache.getPerson(markerEvent.getPersonID());
 
                     mapTextView.setText(
-                            person.getFirstName().substring(1, person.getFirstName().length() - 1)
-                            + " " +
-                            person.getLastName().substring(1, person.getLastName().length() - 1) + "\n" +
-                            markerEvent.getEvent().getEventType().toUpperCase() + ": " +
-                            markerEvent.getEvent().getCity() + ", " +
-                            markerEvent.getEvent().getCountry() + " (" + markerEvent.getEvent().getYear() + ")");
+                            dataCache.getPersonOfEvent(markerEvent) + "\n" +
+                            dataCache.getEventDetails(markerEvent));
+
+                    mapTextView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(getContext(), PersonActivity.class);
+                            intent.putExtra(PersonActivity.PERSON_KEY, person.getPersonID());
+                            startActivity(intent);
+                        }
+                    });
 
                     if(person.getGender().equalsIgnoreCase("f")){
                         personIcon.setImageDrawable(femaleIcon);
@@ -128,13 +159,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
                     Event spouseEvent = lineBuilder.getSpouseEvent();
 
-                    if(spouseEvent != null && lineBuilder.shouldShowLine(markerEvent.getEvent(), spouseEvent, filteredEvents)){
-                        drawLine(markerEvent.getEvent(), spouseEvent, Color.RED, (float) 0.1);
+                    if(spouseEvent != null && lineBuilder.shouldShowLine(markerEvent, spouseEvent, filteredEvents)){
+                        drawLine(markerEvent, spouseEvent, Color.RED, (float) 0.1);
                     }
 
                     drawFamilyTreeLines(markerEvent, filteredEvents);
 
-                    drawLifeStoryLines(person, filteredEvents);
+                    drawLifeStoryLines(person.getPersonID());
 
                     return false;
                 }
@@ -142,55 +173,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
-    private void drawLifeStoryLines(Person person, ArrayList<MapEvent> filteredEvents){
+    private void drawLifeStoryLines(String personID){
         LineBuilder lineBuilder = new LineBuilder();
-        // Get all events for person
-        ArrayList<Event> personEvents = dataCache.getPersonEvents(person.getPersonID());
-
-        // Sort events in linked list
-        LinkedList<Event> lifeEvents = new LinkedList<>();
-
-        Event earliestEvent = dataCache.getEarliestEvent(personEvents);
-        if(earliestEvent == null){
-            return;
-        }
-
-        lifeEvents.add(dataCache.getEarliestEvent(personEvents));
-
-
-        personEvents.remove(earliestEvent);
-
-        if(personEvents.size() != 0){
-            lifeEvents = lifeStory_Helper(personEvents, lifeEvents);
-        }
-
-        for(int i = 0; i < lifeEvents.size() - 1; i ++){
-            Event start = lifeEvents.get(i);
-            Event end = lifeEvents.get(i + 1);
-            if(lineBuilder.shouldShowLine(start, end, filteredEvents)){
+        LinkedList<Event> sortedLifeEvents = dataCache.getSortedUserLifeEvents(personID);
+        for(int i = 0; i < sortedLifeEvents.size() - 1; i ++){
+            Event start = sortedLifeEvents.get(i);
+            Event end = sortedLifeEvents.get(i + 1);
+            if(lineBuilder.shouldShowLine(start, end, dataCache.getFilteredEvents(personID))){
                 drawLine(start, end, Color.GREEN, (float)0.1);
             }
         }
     }
 
-    private LinkedList<Event> lifeStory_Helper(ArrayList<Event> eventsLeft,
-                                               LinkedList<Event> sortedEvents){
-
-        Event nextEarlEvent = dataCache.getEarliestEvent(eventsLeft);
-        sortedEvents.addLast(nextEarlEvent);
-        eventsLeft.remove(nextEarlEvent);
-
-        if(eventsLeft.size() == 0){
-            return sortedEvents;
-        } else {
-            return lifeStory_Helper(eventsLeft, sortedEvents);
-        }
-    }
-
-
-    private void drawFamilyTreeLines(MapEvent currentMapEvent, ArrayList<MapEvent> filteredEvents){
+    private void drawFamilyTreeLines(Event currentEvent, ArrayList<Event> filteredEvents){
         LineBuilder lineBuilder = new LineBuilder();
-        Event currentEvent = currentMapEvent.getEvent();
         Person person = dataCache.getPerson(currentEvent.getPersonID());
         Person father = dataCache.getPerson(person.getFatherID());
         Person mother = dataCache.getPerson(person.getMotherID());
@@ -218,7 +214,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
-    private void famTreeLines_Helper(Event currentEvent, Person person, ArrayList<MapEvent> filteredEvents, float gen, LineBuilder lineBuilder){
+    private void famTreeLines_Helper(Event currentEvent, Person person, ArrayList<Event> filteredEvents, float gen, LineBuilder lineBuilder){
 
         // Find parents' birth events
         Person father = dataCache.getPerson(person.getFatherID());
@@ -274,59 +270,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapLines.add(line);
     }
 
-    /**
-     * Get filtered map events based on settings found in DataCache
-     * @return
-     */
-    private ArrayList<MapEvent> getFilteredEvents(String personID){
 
-        DataCache dataCache = DataCache.getInstance();
-
-        // Add spouse events
-        ArrayList<MapEvent> allMapEvents = new ArrayList<>();
-
-        // Add spouse events as map events
-        for(Event event : dataCache.getSpouseEvents(personID)){
-            MapEvent newEvent;
-            boolean isMale = dataCache.getPerson(event.getPersonID()).getGender().equalsIgnoreCase("m");
-            newEvent = new MapEvent(event, isMale);
-            allMapEvents.add(newEvent);
-        }
-
-        // Add mom and dad's side of events
-        if(dataCache.isShowDadSideEvents()){
-            allMapEvents.addAll(dataCache.getDadSideEvents());
-        }
-        if(dataCache.isShowMomSideEvents()){
-            allMapEvents.addAll(dataCache.getMomSideEvents());
-        }
-
-        ArrayList<MapEvent> filteredEvents = new ArrayList<>();
-
-        // Add user events here to avoid father/mother side complications
-        allMapEvents.addAll(dataCache.getUserEvents());
-
-        // Filter events based on gender
-        if(!dataCache.isShowFemaleEvents()){
-            for(MapEvent mapEvent : allMapEvents){
-                if(!mapEvent.isMaleEvent()){
-                    filteredEvents.add(mapEvent);
-                }
-            }
-        }
-        if(!dataCache.isShowMaleEvents()){
-            for(MapEvent mapEvent : allMapEvents){
-                if(mapEvent.isMaleEvent()){
-                    filteredEvents.add(mapEvent);
-                }
-            }
-        }
-
-        // Remove filtered events
-        allMapEvents.removeAll(filteredEvents);
-
-        return allMapEvents;
-    }
 
     @Override
     public void onMapLoaded() {

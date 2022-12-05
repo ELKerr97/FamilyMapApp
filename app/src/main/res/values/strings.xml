@@ -12,6 +12,7 @@
     <string name="register_button">Register</string>
     <string name="male_option">Male</string>
     <string name="female_option">Female</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="relatives_title">Relatives</string>
+    <string name="life_events_title">Life Events</string>
+
 </resources>

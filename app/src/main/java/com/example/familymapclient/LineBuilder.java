@@ -21,7 +21,7 @@ public class LineBuilder {
     /**
      * Lines will be made based on this event
      */
-    private MapEvent currentEvent;
+    private Event currentEvent;
 
     /**
      * Person ID associated with the observed event
@@ -36,19 +36,9 @@ public class LineBuilder {
     /**
      * MapEvents that are available for line-drawing
      */
-    private ArrayList<MapEvent> filteredEvents;
+    private ArrayList<Event> filteredEvents;
 
-    /**
-     * An array of linked map events between which we will draw family tree lines
-     */
-    private ArrayList<LinkedList<MapEvent>> familyTreeEvents;
-
-    /**
-     * An array of linked map events between which we will draw life story lines
-     */
-    private ArrayList<LinkedList<MapEvent>> lifeStoryEvents;
-
-    public LineBuilder (MapEvent currentEvent, String personID, ArrayList<MapEvent> filteredEvents){
+    public LineBuilder (Event currentEvent, String personID, ArrayList<Event> filteredEvents){
         this.currentEvent = currentEvent;
         this.personID = personID;
         this.filteredEvents = filteredEvents;
@@ -64,11 +54,11 @@ public class LineBuilder {
      * @param mapEvent2 second event
      * @return
      */
-    public boolean shouldShowLine(Event mapEvent1, Event mapEvent2, ArrayList<MapEvent> events){
-        for(MapEvent filteredEvent : events){
-            if(filteredEvent.getEvent().getEventID().equals(mapEvent1.getEventID())){
-                for(MapEvent filteredEvent1 : events){
-                    if(filteredEvent1.getEvent().getEventID().equals(mapEvent2.getEventID())){
+    public boolean shouldShowLine(Event mapEvent1, Event mapEvent2, ArrayList<Event> events){
+        for(Event filteredEvent : events){
+            if(filteredEvent.getEventID().equals(mapEvent1.getEventID())){
+                for(Event filteredEvent1 : events){
+                    if(filteredEvent1.getEventID().equals(mapEvent2.getEventID())){
                         return true;
                     }
                 }
@@ -76,11 +66,6 @@ public class LineBuilder {
         }
 
         return false;
-    }
-
-    public ArrayList<LinkedList<MapEvent>> getFamilyTreeEvents() {
-
-        return familyTreeEvents;
     }
 
     public Event getSpouseEvent() {

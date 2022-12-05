@@ -124,6 +124,7 @@ public class LoginFragment extends Fragment {
                                         context,
                                         "Successfully logged in " + firstName + " " + lastName,
                                         Toast.LENGTH_LONG);
+
                                 loginToast.show();
                                 listener.notifyDone();
                             } else {
