@@ -1,5 +1,6 @@
 package com.example.familymapclient;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class DataCache {
     private ArrayList<String> lastNames;
     private String userPersonID;
     private String userAuthToken;
+    private String username;
     private String serverHost;
     private String serverPort;
     private final Map<String, Float> eventColors;
@@ -38,14 +40,15 @@ public class DataCache {
     private boolean showLifeStoryLines;
 
     public final int MAIN_ACTIVITY = 0;
-    public final int EVENT_ACTIVITY = 1;
-    public final int SETTINGS_ACTIVITY = 2;
-    public final int SEARCH_ACTIVITY = 3;
+
     private int currentActivity;
+
+    private GoogleMap googleMap;
 
     private Event currentMapEvent;
 
     private static DataCache instance;
+
 
     public static void setInstance(DataCache instance){
         DataCache.instance = instance;
@@ -72,6 +75,14 @@ public class DataCache {
         this.eventColors = new HashMap<>();
     }
 
+    public GoogleMap getGoogleMap(){
+        return googleMap;
+    }
+
+    public void setGoogleMap(GoogleMap googleMap){
+        this.googleMap = googleMap;
+    }
+
     public boolean userLoggedIn(){
         return userLoggedIn;
     }
@@ -96,6 +107,22 @@ public class DataCache {
         this.currentMapEvent = event;
     }
 
+    public void refineSearch (ArrayList<Person> filteredPeople, ArrayList<Event> filteredEvents, String search){
+        filteredEvents.clear();
+        filteredPeople.clear();
+        if(!search.equals("")){
+            for(Person person : getPeople()){
+                if((person.getFirstName().toLowerCase() + " " + person.getLastName().toLowerCase()).contains(search)){
+                    filteredPeople.add(person);
+                }
+            }
+            for(Event event : getFilteredEvents(getUserPersonID())) {
+                if(getEventDetails(event).toLowerCase().contains(search)){
+                    filteredEvents.add(event);
+                }
+            }
+        }
+    }
     /**
      * Get a Person object based on a personID string
      * @param personID String of person ID
@@ -108,6 +135,15 @@ public class DataCache {
             }
         }
 
+        return null;
+    }
+
+    public Event getEvent(String eventID){
+        for(Event event : allEvents){
+            if(event.getEventID().equals(eventID)){
+                return event;
+            }
+        }
         return null;
     }
 
@@ -172,13 +208,22 @@ public class DataCache {
     }
 
     public LinkedList<Event> getSortedUserLifeEvents (String personID){
-        ArrayList<Event> filteredEvents = getFilteredEvents(personID);
+        ArrayList<Event> filteredEvents = getFilteredEvents(userPersonID);
         ArrayList<Event> personEvents = getPersonEvents(personID);
+        ArrayList<Event> events = new ArrayList<>();
         LinkedList<Event> sortedLifeEvents = new LinkedList<>();
+
+        for(Event event : personEvents){
+            if(!filteredEvents.contains(event)){
+                events.add(event);
+            }
+        }
+
+        personEvents.removeAll(events);
 
         Event earliestEvent = getEarliestEvent(personEvents);
         if(earliestEvent == null){
-            return null;
+            return sortedLifeEvents;
         }
 
         sortedLifeEvents.add(earliestEvent);
@@ -485,5 +530,18 @@ public class DataCache {
 
     public void setServerPort(String serverPort) {
         this.serverPort = serverPort;
+    }
+
+    public void clear() {
+        allEvents.clear();
+        people.clear();
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUsername(){
+        return username;
     }
 }

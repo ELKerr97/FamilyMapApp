@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/lifeStoryOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/lifeStoryOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/life_story_lines">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/lifeStoryOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/show_life_story_lines"
+            android:layout_below="@+id/lifeStoryOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/lifeStoryOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/familyTreeOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/familyTreeOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/family_tree_lines">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/familyTreeOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/show_family_tree_lines"
+            android:layout_below="@+id/familyTreeOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/familyTreeOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/spouseLinesOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/spouseLinesOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/spouse_lines">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/spouseLinesOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/show_spouse_lines"
+            android:layout_below="@+id/spouseLinesOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/spouseLinesOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/fatherSideOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/fatherSideOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/father_s_side">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/fatherSideOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/show_father_s_side_of_family"
+            android:layout_below="@+id/fatherSideOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/fatherSideOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/motherSideOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/motherSideOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/mother_s_side">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/motherSideOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/show_mother_s_side_of_family"
+            android:layout_below="@+id/motherSideOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/motherSideOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/maleEventOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/maleEventOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/male_events">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/maleEventOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/filter_events_based_on_gender"
+            android:layout_below="@+id/maleEventOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/maleEventOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/femaleEventOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/femaleEventOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/female_events">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/femaleEventOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/filter_events_based_on_gender"
+            android:layout_below="@+id/femaleEventOption_title">
+
+        </TextView>
+
+        <Switch
+            android:id="@+id/femaleEventOption_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:checked="true">
+
+        </Switch>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+    <RelativeLayout
+        android:id="@+id/logoutOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/logoutOption_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text = "@string/logout">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/logoutOption_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/return_to_login_screen"
+            android:layout_below="@+id/logoutOption_title">
+
+        </TextView>
+
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+
+    </View>
+
+
+
+</LinearLayout>

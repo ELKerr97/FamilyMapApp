@@ -9,7 +9,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.SQLOutput;
 
+import request.ClearRequest;
 import request.EventRequest;
 import request.LoginRequest;
 import request.PersonRequest;
@@ -56,6 +58,8 @@ public class ServerProxy {
                 PersonRequest personRequest = new PersonRequest(loginResult.getAuthtoken(), "");
                 // set user Auth Token in data cache for later use
                 dataCache.setUserAuthToken(loginResult.getAuthtoken());
+                dataCache.setUsername(loginResult.getUsername());
+                dataCache.setUserPersonID(loginResult.getPersonID());
                 getEvents(eventRequest);
                 getPeople(personRequest);
             } else {
@@ -103,6 +107,35 @@ public class ServerProxy {
             if (personRequest.getPersonID().equalsIgnoreCase("")){
                 dataCache.setPeople(personResult.getData());
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
+    public void clear (){
+
+        try {
+            // Make request body
+            URL url = new URL("http://" + dataCache.getServerHost() +
+                    ":" + dataCache.getServerPort() + "/clear");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Accept", "application/json");
+            connection.connect();
+
+            int responseCode = connection.getResponseCode();
+
+            if(responseCode == 200){
+                System.out.println("CLEAR SUCCESS");
+
+            } else {
+                System.out.println("CLEAR FAIL");
+            }
+
 
         } catch (IOException e) {
             e.printStackTrace();

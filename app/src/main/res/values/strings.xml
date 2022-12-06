@@ -16,5 +16,20 @@
     <string name="life_events_title">Life Events</string>
     <string name="settings">Settings</string>
     <string name="search">Search</string>
+    <string name="life_story_lines">Life Story Lines</string>
+    <string name="show_life_story_lines">SHOW LIFE STORY LINES</string>
+    <string name="family_tree_lines">Family Tree Lines</string>
+    <string name="show_family_tree_lines">SHOW FAMILY TREE LINES</string>
+    <string name="spouse_lines">Spouse Lines</string>
+    <string name="show_spouse_lines">SHOW SPOUSE LINES</string>
+    <string name="father_s_side">Father\'s Side</string>
+    <string name="show_father_s_side_of_family">FILTER FATHER\'S SIDE OF FAMILY</string>
+    <string name="mother_s_side">Mother\'s Side</string>
+    <string name="show_mother_s_side_of_family">FILTER MOTHER\'S SIDE OF FAMILY</string>
+    <string name="male_events">Male Events</string>
+    <string name="filter_events_based_on_gender">FILTER EVENTS BASED ON GENDER</string>
+    <string name="female_events">Female Events</string>
+    <string name="logout">Logout</string>
+    <string name="return_to_login_screen">RETURN TO LOGIN SCREEN</string>
 
 </resources>

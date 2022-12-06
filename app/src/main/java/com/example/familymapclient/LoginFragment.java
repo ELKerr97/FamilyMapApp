@@ -249,6 +249,7 @@ public class LoginFragment extends Fragment {
                 messageBundle.putString(LOGIN_RESULT_FIRSTNAME_KEY, userPerson.getFirstName());
                 messageBundle.putString(LOGIN_RESULT_LASTNAME_KEY, userPerson.getLastName());
                 dataCache.setUserPersonID(userPerson.getPersonID());
+                dataCache.setUsername(result.getUsername());
                 dataCache.setUserLoggedIn(true);
             }
             messageBundle.putString(LOGIN_RESULT_KEY, result.getMessage());

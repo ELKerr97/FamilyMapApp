@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import model.Event;
 import model.Person;
@@ -30,7 +32,7 @@ import model.Person;
 public class SearchActivity extends AppCompatActivity {
 
     private static final int PERSON_ITEM_VIEW_TYPE = 0;
-    private static final int EVENT_ITEM_VIEW_TYPE = 0;
+    private static final int EVENT_ITEM_VIEW_TYPE = 1;
     private DataCache dataCache = DataCache.getInstance();
 
     @Override
@@ -41,14 +43,45 @@ public class SearchActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(SearchActivity.this));
 
+        ArrayList<Person> filteredPeople = new ArrayList<>();
+        ArrayList<Event>  filteredEvents = new ArrayList<>();
+
         SearchView searchView = findViewById(R.id.search_bar);
-        //searchView.setOnQueryTextListener();
-        ArrayList<Person> filteredPeople = dataCache.getFilteredPeople();
-        ArrayList<Event>  filteredEvents = dataCache.getFilteredEvents(dataCache.getUserPersonID());
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
 
-        SearchAdapter adapter = new SearchAdapter(filteredPeople, filteredEvents);
-        recyclerView.setAdapter(adapter);
+            @Override
+            public boolean onQueryTextChange(String search) {
+                search = search.toLowerCase();
 
+                dataCache.refineSearch(filteredPeople, filteredEvents, search);
+
+                SearchAdapter adapter = new SearchAdapter(filteredPeople, filteredEvents);
+                recyclerView.setAdapter(adapter);
+                return false;
+            }
+        });
+
+    }
+
+    private void refineSearch (ArrayList<Person> filteredPeople, ArrayList<Event> filteredEvents, String search){
+        filteredEvents.clear();
+        filteredPeople.clear();
+        if(!search.equals("")){
+            for(Person person : dataCache.getPeople()){
+                if((person.getFirstName().toLowerCase() + " " + person.getLastName().toLowerCase()).contains(search)){
+                    filteredPeople.add(person);
+                }
+            }
+            for(Event event : dataCache.getFilteredEvents(dataCache.getUserPersonID())) {
+                if(dataCache.getEventDetails(event).toLowerCase().contains(search)){
+                    filteredEvents.add(event);
+                }
+            }
+        }
     }
 
     private class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
@@ -141,15 +174,16 @@ public class SearchActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View view) {
+            Intent intent;
             if(viewType == PERSON_ITEM_VIEW_TYPE){
-                Intent intent = new Intent(SearchActivity.this, PersonActivity.class);
+                intent = new Intent(SearchActivity.this, PersonActivity.class);
                 intent.putExtra(PersonActivity.PERSON_KEY, person.getPersonID());
-                startActivity(intent);
             } else {
-                Intent intent = new Intent(SearchActivity.this, EventActivity.class);
                 dataCache.setCurrentMapEvent(event);
-                startActivity(intent);
+                intent = new Intent(SearchActivity.this, EventActivity.class);
+                intent.putExtra(EventActivity.EVENT_KEY, event.getEventID());
             }
+            startActivity(intent);
         }
     }
 
@@ -161,6 +195,16 @@ public class SearchActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.up_only_menu, menu);
 
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == android.R.id.home){
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
         return true;
     }
 }

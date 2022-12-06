@@ -8,6 +8,7 @@ import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,6 +18,8 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import model.Event;
 
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
@@ -70,9 +73,10 @@ public class PersonActivity extends AppCompatActivity {
             relatives.add(father);
         }
 
+        LinkedList<Event> personLifeEvents = dataCache.getSortedUserLifeEvents(person.getPersonID());
         ExpandableListView expandableListView = findViewById(R.id.expandable_list_view);
         expandableListView.setAdapter(new ExpandableListAdapter(
-                dataCache.getSortedUserLifeEvents(person.getPersonID()),
+                personLifeEvents,
                 relatives
         ));
 
@@ -206,8 +210,8 @@ public class PersonActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     // Set the event to be viewed in map fragment
-                    dataCache.setCurrentMapEvent(personLifeEvents.get(childPosition));
                     Intent intent = new Intent(PersonActivity.this, EventActivity.class);
+                    intent.putExtra(EventActivity.EVENT_KEY, personLifeEvents.get(childPosition).getEventID());
                     startActivity(intent);
                 }
             });

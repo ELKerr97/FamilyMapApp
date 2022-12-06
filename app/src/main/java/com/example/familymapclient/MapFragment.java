@@ -31,10 +31,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Random;
 
 import model.Event;
@@ -45,6 +48,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private GoogleMap map;
     private ArrayList<Polyline> mapLines;
     private DataCache dataCache = DataCache.getInstance();
+    private TextView mapTextView;
+    private ImageView personIcon;
+    private Drawable maleIcon;
+    private Drawable femaleIcon;
+    private Event observedEvent;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,57 +73,33 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapLines = new ArrayList<>();
         // Set google map
         map = googleMap;
+        dataCache.setGoogleMap(googleMap);
         map.setOnMapLoadedCallback(this);
-        TextView mapTextView = getView().findViewById(R.id.mapEventDescription);
-        ImageView personIcon = getView().findViewById(R.id.personIcon);
+
+        mapTextView = getView().findViewById(R.id.mapEventDescription);
+        personIcon = getView().findViewById(R.id.personIcon);
         personIcon.setImageResource(R.drawable.ic_launcher_foreground);
-        Drawable maleIcon = new IconDrawable(getActivity(), FontAwesomeIcons.fa_male)
+
+        maleIcon = new IconDrawable(getActivity(), FontAwesomeIcons.fa_male)
                 .colorRes(R.color.male_color).sizeDp(40);
-        Drawable femaleIcon = new IconDrawable(getActivity(), FontAwesomeIcons.fa_female)
+        femaleIcon = new IconDrawable(getActivity(), FontAwesomeIcons.fa_female)
                 .colorRes(R.color.female_color).sizeDp(40);
 
-        // Default login location (arbitrary)
-        LatLng location;
-        if(dataCache.getCurrentMapEvent() == null){
-            location = new LatLng(50, 50);
-        } else {
-            Event currentEvent = dataCache.getCurrentMapEvent();
-            location = new LatLng(currentEvent.getLatitude(), currentEvent.getLongitude());
-            Person person = dataCache.getPerson(currentEvent.getPersonID());
+        drawMarkers();
 
-            if(person.getGender().equalsIgnoreCase("f")){
-                personIcon.setImageDrawable(femaleIcon);
-            } else {
-                personIcon.setImageDrawable(maleIcon);
-            }
-
-            mapTextView.setText(
-                    dataCache.getPersonOfEvent(currentEvent) + "\n" +
-                            dataCache.getEventDetails(currentEvent));
-            // Draw lines based on filters
-            LineBuilder lineBuilder = new LineBuilder(currentEvent, person.getPersonID(), dataCache.getFilteredEvents(person.getPersonID()));
-
-            Event spouseEvent = lineBuilder.getSpouseEvent();
-
-            if(spouseEvent != null && lineBuilder.shouldShowLine(currentEvent, spouseEvent, dataCache.getFilteredEvents(person.getPersonID()))){
-                drawLine(currentEvent, spouseEvent, Color.RED, (float) 0.1);
-            }
-
-            drawLifeStoryLines(person.getPersonID());
-            drawFamilyTreeLines(currentEvent, dataCache.getFilteredEvents(person.getPersonID()));
-
-            mapTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(getContext(), PersonActivity.class);
-                    intent.putExtra(PersonActivity.PERSON_KEY, person.getPersonID());
-                    startActivity(intent);
-                }
-            });
+        if(observedEvent != null){
+            centerOnEvent(observedEvent);
+            drawEventLines(observedEvent);
+            setEventDescription(observedEvent);
         }
 
-        map.animateCamera(CameraUpdateFactory.newLatLng(location));
+    }
 
+    public void drawMarkers() {
+        if(map  == null){
+            map = dataCache.getGoogleMap();
+        }
+        map.clear();
         ArrayList<Event> filteredEvents = dataCache.getFilteredEvents(dataCache.getUserPersonID());
         // Get all map events and display them
         for(Event mapEvent : filteredEvents){
@@ -125,8 +109,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             LatLng eventLocation = new LatLng(mapEvent.getLatitude(),
                     mapEvent.getLongitude());
 
+
             Marker eventMarker = map.addMarker(
-                            new MarkerOptions().
+                    new MarkerOptions().
                             position(eventLocation).
                             icon(BitmapDescriptorFactory.defaultMarker(dataCache.getEventColor(eventType))));
 
@@ -139,39 +124,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     removeLines();
                     // Display the person associated with the event on screen
                     Event markerEvent = (Event) marker.getTag();
-                    Person person = dataCache.getPerson(markerEvent.getPersonID());
 
-                    mapTextView.setText(
-                            dataCache.getPersonOfEvent(markerEvent) + "\n" +
-                            dataCache.getEventDetails(markerEvent));
+                    setObservedEvent(markerEvent);
 
-                    mapTextView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = new Intent(getContext(), PersonActivity.class);
-                            intent.putExtra(PersonActivity.PERSON_KEY, person.getPersonID());
-                            startActivity(intent);
-                        }
-                    });
+                    setEventDescription(markerEvent);
 
-                    if(person.getGender().equalsIgnoreCase("f")){
-                        personIcon.setImageDrawable(femaleIcon);
-                    } else {
-                        personIcon.setImageDrawable(maleIcon);
-                    }
-
-                    // Draw lines based on filters
-                    LineBuilder lineBuilder = new LineBuilder(markerEvent, person.getPersonID(), filteredEvents);
-
-                    Event spouseEvent = lineBuilder.getSpouseEvent();
-
-                    if(spouseEvent != null && lineBuilder.shouldShowLine(markerEvent, spouseEvent, filteredEvents)){
-                        drawLine(markerEvent, spouseEvent, Color.RED, (float) 0.1);
-                    }
-
-                    drawFamilyTreeLines(markerEvent, filteredEvents);
-
-                    drawLifeStoryLines(person.getPersonID());
+                    drawEventLines(markerEvent);
 
                     return false;
                 }
@@ -179,28 +137,68 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        if(dataCache.getCurrentActivity() == dataCache.MAIN_ACTIVITY){
-            inflater.inflate(R.menu.main_menu, menu);
+    public void setEventDescription(Event event){
+
+        Person person = dataCache.getPerson(event.getPersonID());
+
+        mapTextView.setText(
+                dataCache.getPersonOfEvent(event) + "\n" +
+                        dataCache.getEventDetails(event));
+
+        mapTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), PersonActivity.class);
+                intent.putExtra(PersonActivity.PERSON_KEY, person.getPersonID());
+                startActivity(intent);
+            }
+        });
+
+        if(person.getGender().equalsIgnoreCase("f")){
+            personIcon.setImageDrawable(femaleIcon);
         } else {
-            inflater.inflate(R.menu.up_only_menu, menu);
+            personIcon.setImageDrawable(maleIcon);
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.search_menu_item:
-                Intent intent = new Intent(getContext(), SearchActivity.class);
-                startActivity(intent);
-                return true;
-            case R.id.settings_menu_item:
-                // Go to settings activity
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    public void setObservedEvent(Event event){
+        this.observedEvent = event;
+    }
+
+    public Event getObservedEvent() {
+        return observedEvent;
+    }
+
+    public void centerOnEvent(Event event) {
+        if(map == null){
+            map = dataCache.getGoogleMap();
+        }
+        LatLng location = new LatLng(event.getLatitude(), event.getLongitude());
+        map.animateCamera(CameraUpdateFactory.newLatLng(location));
+    }
+
+    public void drawEventLines(Event event){
+
+        ArrayList<Event> filteredEvents = dataCache.getFilteredEvents(dataCache.getUserPersonID());
+
+        Person person = dataCache.getPerson(event.getPersonID());
+        // Draw lines based on filters
+        LineBuilder lineBuilder = new LineBuilder(event, person.getPersonID(), filteredEvents);
+
+        Event spouseEvent = lineBuilder.getSpouseEvent();
+
+        if(dataCache.isShowSpouseLines()) {
+            if (spouseEvent != null && lineBuilder.shouldShowLine(event, spouseEvent, filteredEvents)) {
+                drawLine(event, spouseEvent, Color.RED, (float) 0.1);
+            }
+        }
+
+        if(dataCache.isShowFamilyTreeLines()){
+            drawFamilyTreeLines(event, filteredEvents);
+        }
+
+        if(dataCache.isShowLifeStoryLines()){
+            drawLifeStoryLines(person.getPersonID());
         }
     }
 
@@ -290,6 +288,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
      * @param googleColor line color
      */
     private void drawLine(Event startEvent, Event endEvent, int googleColor, float width){
+        if(map  == null){
+            map = dataCache.getGoogleMap();
+        }
         LatLng startPoint = new LatLng(startEvent.getLatitude(), startEvent.getLongitude());
         LatLng endPoint = new LatLng(endEvent.getLatitude(), endEvent.getLongitude());
         PolylineOptions options = new PolylineOptions()
@@ -298,10 +299,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 .color(googleColor)
                 .width((float)1.0 / width);
         Polyline line = map.addPolyline(options);
+        if(mapLines == null){
+            mapLines = new ArrayList<>();
+        }
         mapLines.add(line);
     }
-
-
 
     @Override
     public void onMapLoaded() {
